@@ -73,59 +73,8 @@ class HarviaPowerSwitch(SwitchEntity):
             self._device.thermostat._hvac_mode = HVACMode.OFF
             await self._device.thermostat.update_state()
 
-class HarviaLightSwitch(SwitchEntity):
-    def __init__(self, device, name, sauna):
-        self._device = device
-        self._name = name + ' Light Switch'
-        self._is_on = device.lightsOn
-        self._device_id = device.id + '_light'
-        self._sauna = sauna
-        self._attr_unique_id = device.id + '_light'
-        self._attr_icon = 'mdi:lightbulb-multiple'
-
-        # Bind entities to a Home Assistant device
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, device.id)},
-            name=getattr(device, "name", None) or name,
-            manufacturer="Harvia",
-            model=getattr(device, "model", None) or "Xenio WiFi",
-        )
-
-
-    async def async_added_to_hass(self):
-        """Actions to perform when the entity is added to Home Assistant."""
-        self._device.lightSwitch = self
-        await self._device.update_ha_devices()
-        #self._device.
-
-    async def update_state(self):
-        if not self.enabled:
-            return
-        self.async_write_ha_state()
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def is_on(self):
-        return self._is_on
-
-
-    @property
-    def unique_id(self):
-        """Return a unique ID."""
-        return self._device_id
-
-    async def async_turn_on(self, **kwargs):
-        # Code to turn the sauna on
-        await self._device.set_lights(True)
-        self._is_on = True
-
-    async def async_turn_off(self, **kwargs):
-        # Code to turn the sauna off
-        await self._device.set_lights(False)
-        self._is_on = False
+# NOTE: the cabin light used to be a HarviaLightSwitch here. It now lives on the
+# `light` platform (see light.py / HarviaLight) so it presents as a real light.
 
 class HarviaSteamerSwitch(SwitchEntity):
     def __init__(self, device, name, sauna):
