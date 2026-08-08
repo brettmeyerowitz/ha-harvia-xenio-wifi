@@ -9,7 +9,8 @@ import uuid
 import random
 
 
-from .switch import HarviaPowerSwitch, HarviaLightSwitch, HarviaFanSwitch, HarviaSteamerSwitch
+from .switch import HarviaPowerSwitch, HarviaFanSwitch, HarviaSteamerSwitch
+from .light import HarviaLight
 from .climate import HarviaThermostat
 from .sensor import HarviaHumiditySensor, HarviaWifiRssiSensor, HarviaRemainingTimeSensor, HarviaStovePowerSensor
 from .number import HarviaHumiditySetPoint
@@ -33,6 +34,7 @@ _LOGGER = logging.getLogger(__name__)
 # IMPORTANT: use Platform enums (not strings) so forward/unload works reliably across HA versions.
 PLATFORMS: list[Platform] = [
     Platform.SWITCH,
+    Platform.LIGHT,
     Platform.CLIMATE,
     Platform.BINARY_SENSOR,
     Platform.SENSOR,
@@ -79,6 +81,7 @@ class HarviaDevice:
         self.sensors = None
         self.numbers = None
         self.switches = None
+        self.lights = None
         self.thermostats = None
         self.lastestUpdate = None
 
@@ -337,16 +340,25 @@ class HarviaDevice:
         self.switches = []
 
         powerSwitch = HarviaPowerSwitch(device=self, name=self.name, sauna=self.sauna)
-        lightSwitch = HarviaLightSwitch(device=self, name=self.name, sauna=self.sauna)
         steamerSwitch = HarviaSteamerSwitch(device=self, name=self.name, sauna=self.sauna)
         fanSwitch = HarviaFanSwitch(device=self, name=self.name, sauna=self.sauna)
 
         self.switches.append(powerSwitch)
-        self.switches.append(lightSwitch)
         self.switches.append(steamerSwitch)
         self.switches.append(fanSwitch)
 
         return self.switches
+
+    async def get_lights(self) -> list:
+        if self.lights is not None:
+            return self.lights
+
+        self.lights = []
+
+        light = HarviaLight(device=self, name=self.name, sauna=self.sauna)
+        self.lights.append(light)
+
+        return self.lights
 
 
 class HarviaWebsock:
